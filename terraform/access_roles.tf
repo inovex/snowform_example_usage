@@ -1,7 +1,7 @@
 module "access_roles" {
-  source = "github.com/inovex/snowform_access_roles.git?ref=0.0.1"
-  db     = snowflake_database.common_db
-  data_layers = [
+  source  = "github.com/inovex/snowform_access_roles.git?ref=0.0.1"
+  db      = snowflake_database.common_db
+  schemas = [
     {
       name = "COMMON"
     }
