@@ -141,7 +141,7 @@ jobs:
         working-directory: terraform
         run: |
           export TF_LOG=DEBUG
-          tofu plan -input=false -detailed-exitcode -out=tfplan
+          tofu plan -detailed-exitcode -out=tfplan
         
       - name: Upload Plan
         uses: actions/upload-artifact@v4
