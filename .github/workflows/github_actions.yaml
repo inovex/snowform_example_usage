@@ -105,6 +105,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Download Encrypted Artifact & Decrypt Artifact
+        uses: badgerhobbs/terraform-state@v2
+        with:
+          encryption_key: ${{ secrets.encryption_key }}
+          operation: download
+          location: artifact
+          github_token: ${{ secrets.gh_access_token }}
+        continue-on-error: true
+
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
@@ -127,6 +136,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Download Encrypted Artifact & Decrypt Artifact
+        uses: badgerhobbs/terraform-state@v2
+        with:
+          encryption_key: ${{ secrets.encryption_key }}
+          operation: download
+          location: artifact
+          github_token: ${{ secrets.gh_access_token }}
+        continue-on-error: true
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -160,6 +178,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Download Encrypted Artifact & Decrypt Artifact
+        uses: badgerhobbs/terraform-state@v2
+        with:
+          encryption_key: ${{ secrets.encryption_key }}
+          operation: download
+          location: artifact
+          github_token: ${{ secrets.gh_access_token }}
+        continue-on-error: true
+
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
@@ -182,3 +209,11 @@ jobs:
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64 }}
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
         run: tofu apply -auto-approve tfplan
+
+      - name: Encrypt Artifact & Upload Encrypted Artifact
+        uses: badgerhobbs/terraform-state@v2
+        with:
+          encryption_key: ${{ secrets.encryption_key }}
+          operation: upload
+          location: artifact
+          github_token: ${{ secrets.gh_access_token }}
