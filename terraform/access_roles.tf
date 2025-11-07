@@ -1,5 +1,5 @@
 module "access_roles" {
-  source = "github.com/inovex/snowform_access_roles.git?ref=0.0.1"
+  source = "github.com/inovex/snowform_access_roles.git?ref=0.0.2"
   db     = snowflake_database.common_db
   schemas = [
     {
