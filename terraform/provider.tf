@@ -1,7 +1,7 @@
 provider "snowflake" {
   organization_name = "ERUVBJC"
   account_name      = "INOVEX_TF_MODULES"
-  user              = var.snowflake_deploy_user
+  user              = var.SNOWFLAKE_DEPLOY_USER
   # kics-scan ignore-line - to prevent kics-interpretation of base64decode.. as hard-coded password
   private_key              = base64decode(var.SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64)
   private_key_passphrase   = var.SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE
@@ -14,7 +14,7 @@ provider "snowflake" {
 provider "snowflake" {
   organization_name = "ERUVBJC"
   account_name      = "INOVEX_TF_MODULES"
-  user              = var.snowflake_deploy_user
+  user              = var.SNOWFLAKE_DEPLOY_USER
   # kics-scan ignore-line - to prevent kics-interpretation of base64decode.. as hard-coded password
   private_key            = base64decode(var.SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64)
   private_key_passphrase = var.SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE
@@ -26,7 +26,7 @@ provider "snowflake" {
 provider "snowflake" {
   organization_name = "ERUVBJC"
   account_name      = "INOVEX_TF_MODULES"
-  user              = var.snowflake_deploy_user
+  user              = var.SNOWFLAKE_DEPLOY_USER
   # kics-scan ignore-line - to prevent kics-interpretation of base64decode.. as hard-coded password
   private_key              = base64decode(var.SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64)
   private_key_passphrase   = var.SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE
