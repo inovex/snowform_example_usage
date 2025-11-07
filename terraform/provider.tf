@@ -8,6 +8,7 @@ provider "snowflake" {
   role                     = "SYSADMIN"
   alias                    = "sysadmin"
   authenticator            = "SNOWFLAKE_JWT"
+  driver_tracing           = "debug"
   preview_features_enabled = ["snowflake_notification_integration_resource", "snowflake_procedure_sql_resource"]
 }
 
@@ -21,6 +22,7 @@ provider "snowflake" {
   role                   = "USERADMIN"
   alias                  = "useradmin"
   authenticator          = "SNOWFLAKE_JWT"
+  driver_tracing         = "debug"
 }
 
 provider "snowflake" {
@@ -33,5 +35,6 @@ provider "snowflake" {
   role                     = "SECURITYADMIN"
   alias                    = "securityadmin"
   authenticator            = "SNOWFLAKE_JWT"
+  driver_tracing           = "debug"
   preview_features_enabled = ["snowflake_procedure_sql_resource", "snowflake_network_rule_resource", "snowflake_network_policy_attachment_resource", "snowflake_authentication_policy_resource", "snowflake_user_authentication_policy_attachment_resource"]
 }
