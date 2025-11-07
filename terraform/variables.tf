@@ -1,16 +1,16 @@
-variable "snowflake_deploy_user" {
+variable "SNOWFLAKE_DEPLOY_USER" {
   type        = string
   description = "CI/CD variable TF_VAR_snowflake_deploy_user, name of the deployment user"
 }
 
-variable "snowflake_deploy_private_key_base64" {
+variable "SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64" {
   type        = string
-  description = "CI/CD variable TF_VAR_snowflake_deploy_private_key_base64"
+  description = "CI/CD variable TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64"
   sensitive   = true
 }
 
-variable "snowflake_deploy_private_key_passphrase" {
+variable "SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE" {
   type        = string
-  description = "CI/CD variable TF_VAR_snowflake_deploy_private_key_passphrase"
+  description = "CI/CD variable TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE"
   sensitive   = true
 }

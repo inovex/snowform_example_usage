@@ -95,6 +95,7 @@ jobs:
     name: OpenTofu Validate
     needs: [tflint, terraform-fmt, unit-test, kics-scan]
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -116,6 +117,7 @@ jobs:
     name: OpenTofu Plan
     needs: [tofu-validate]
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -131,7 +133,7 @@ jobs:
 
       - name: OpenTofu Plan
         working-directory: terraform
-        run: tofu plan -out=tfplan
+        run: tofu plan -input=false -out=tfplan
         
       - name: Upload Plan
         uses: actions/upload-artifact@v4
@@ -143,8 +145,7 @@ jobs:
     name: OpenTofu Apply
     needs: [tofu-plan]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Only run on main branch
-    environment: production
+    environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
