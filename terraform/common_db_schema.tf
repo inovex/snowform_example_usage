@@ -10,4 +10,5 @@ resource "snowflake_schema" "common_common_schema" {
   name                = "COMMON"
   with_managed_access = true
   is_transient        = false
+  depends_on          = [snowflake_database.common_db]
 }
