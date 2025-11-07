@@ -1,8 +1,6 @@
 name: SnowForm Workflow
 run-name: ${{ github.actor }} is testing updates for a SnowForm Terraform Module 🚀
 on: [push]
-env:
-  TFDIR: terraform
 
 jobs:
   tflint:
@@ -26,13 +24,12 @@ jobs:
       - name: Show version
         run: tflint --version
 
-      - name: CD TFDIR
-        run: cd $TFDIR
-
       - name: Init TFLint
+        working-directory: terraform
         run: tflint --init
 
       - name: Run TFLint
+        working-directory: terraform
         run: tflint --recursive
 
   terraform-fmt:
@@ -47,10 +44,8 @@ jobs:
         with:
           tofu_version: 1.9.0
 
-      - name: CD TFDIR
-        run: cd $TFDIR
-
       - name: Terraform Format Check
+        working-directory: terraform
         run: tofu fmt -check -recursive
 
   unit-test:
@@ -65,13 +60,12 @@ jobs:
         with:
           tofu_version: 1.9.0
 
-      - name: CD TFDIR
-        run: cd $TFDIR
-
       - name: OpenTofu init
+        working-directory: terraform
         run: tofu init
 
       - name: Run OpenTofu Tests
+        working-directory: terraform
         run: tofu test
 
   kics-scan:
@@ -110,13 +104,12 @@ jobs:
         with:
           tofu_version: 1.9.0
 
-      - name: CD TFDIR
-        run: cd $TFDIR
-
       - name: OpenTofu Init
+        working-directory: terraform
         run: tofu init
 
       - name: OpenTofu Validate
+        working-directory: terraform
         run: tofu validate
 
   tofu-plan:
@@ -132,16 +125,16 @@ jobs:
         with:
           tofu_version: 1.9.0
 
-      - name: CD TFDIR
-        run: cd $TFDIR
-
       - name: OpenTofu Init
+        working-directory: terraform
         run: tofu init
 
       - name: OpenTofu Plan
+        working-directory: terraform
         run: tofu plan -out=tfplan
         
       - name: Upload Plan
+        working-directory: terraform
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
@@ -162,16 +155,16 @@ jobs:
         with:
           tofu_version: 1.9.0
 
-      - name: CD TFDIR
-        run: cd $TFDIR
-
       - name: OpenTofu Init
+        working-directory: terraform
         run: tofu init
 
       - name: Download Plan
+        working-directory: terraform
         uses: actions/download-artifact@v4
         with:
           name: tfplan
 
       - name: OpenTofu Apply
+        working-directory: terraform
         run: tofu apply -auto-approve tfplan
