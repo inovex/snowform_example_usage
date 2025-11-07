@@ -1,6 +1,8 @@
 name: SnowForm Workflow
 run-name: ${{ github.actor }} is testing updates for a SnowForm Terraform Module 🚀
 on: [push]
+env:
+  TFDIR: terraform
 
 jobs:
   tflint:
@@ -24,6 +26,9 @@ jobs:
       - name: Show version
         run: tflint --version
 
+      - name: CD TFDIR
+        run: cd $TFDIR
+
       - name: Init TFLint
         run: tflint --init
 
@@ -42,6 +47,9 @@ jobs:
         with:
           tofu_version: 1.9.0
 
+      - name: CD TFDIR
+        run: cd $TFDIR
+
       - name: Terraform Format Check
         run: tofu fmt -check -recursive
 
@@ -56,6 +64,9 @@ jobs:
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.9.0
+
+      - name: CD TFDIR
+        run: cd $TFDIR
 
       - name: OpenTofu init
         run: tofu init
@@ -99,6 +110,9 @@ jobs:
         with:
           tofu_version: 1.9.0
 
+      - name: CD TFDIR
+        run: cd $TFDIR
+
       - name: OpenTofu Init
         run: tofu init
 
@@ -117,6 +131,9 @@ jobs:
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.9.0
+
+      - name: CD TFDIR
+        run: cd $TFDIR
 
       - name: OpenTofu Init
         run: tofu init
@@ -144,6 +161,9 @@ jobs:
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.9.0
+
+      - name: CD TFDIR
+        run: cd $TFDIR
 
       - name: OpenTofu Init
         run: tofu init
