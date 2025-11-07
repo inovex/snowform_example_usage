@@ -42,7 +42,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.9.1
 
       - name: Terraform Format Check
         working-directory: terraform
@@ -58,7 +58,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.9.1
 
       - name: OpenTofu init
         working-directory: terraform
@@ -102,7 +102,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.9.1
 
       - name: OpenTofu Init
         working-directory: terraform
@@ -123,7 +123,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.9.1
 
       - name: OpenTofu Init
         working-directory: terraform
@@ -152,7 +152,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.9.0
+          tofu_version: 1.9.1
 
       - name: OpenTofu Init
         working-directory: terraform
