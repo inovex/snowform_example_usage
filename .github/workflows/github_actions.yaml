@@ -141,7 +141,12 @@ jobs:
         working-directory: terraform
         env:
           TF_LOG: DEBUG
-        run: tofu plan -detailed-exitcode -out=tfplan
+          TF_VAR_SNOWFLAKE_DEPLOY_USER: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_USER }}
+          TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64 }}
+          TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
+        run: |
+          echo ${TF_VAR_SNOWFLAKE_DEPLOY_USER}
+          tofu plan -detailed-exitcode -out=tfplan
         
       - name: Upload Plan
         uses: actions/upload-artifact@v4
