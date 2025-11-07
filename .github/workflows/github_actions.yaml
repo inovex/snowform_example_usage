@@ -112,6 +112,7 @@ jobs:
           operation: download
           location: artifact
           github_token: ${{ secrets.gh_access_token }}
+          directory: terraform
         continue-on-error: true
 
       - name: Setup OpenTofu
@@ -144,6 +145,7 @@ jobs:
           operation: download
           location: artifact
           github_token: ${{ secrets.gh_access_token }}
+          directory: terraform
         continue-on-error: true
 
       - name: Setup OpenTofu
@@ -185,6 +187,7 @@ jobs:
           operation: download
           location: artifact
           github_token: ${{ secrets.gh_access_token }}
+          directory: terraform
         continue-on-error: true
 
       - name: Setup OpenTofu
