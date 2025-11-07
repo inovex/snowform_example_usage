@@ -149,6 +149,15 @@ jobs:
           name: tfplan
           path: tfplan
 
+      - name: Upload Logs
+        if: always()  # Upload logs even if plan fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-logs
+          path: |
+            terraform-plan.log
+            .terraform/logs/
+
   tofu-apply:
     name: OpenTofu Apply
     needs: [tofu-plan]
