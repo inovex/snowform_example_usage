@@ -1,0 +1,184 @@
+name: SnowForm Workflow
+run-name: ${{ github.actor }} is testing updates for a SnowForm Terraform Module 🚀
+on: [push]
+env:
+  SF_LOG: DEBUG
+  SNOWFLAKE_RETRY_TIMEOUT: 120  # 2 minutes timeout
+  SNOWFLAKE_RETRY_COUNT: 2
+
+
+jobs:
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache TFLint plugin dir
+        uses: actions/cache@v3
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Show version
+        run: tflint --version
+
+      - name: Init TFLint
+        working-directory: terraform
+        run: tflint --init
+
+      - name: Run TFLint
+        working-directory: terraform
+        run: tflint --recursive
+
+  terraform-fmt:
+    name: Terraform Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.1
+
+      - name: Terraform Format Check
+        working-directory: terraform
+        run: tofu fmt -check -recursive
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.1
+
+      - name: OpenTofu init
+        working-directory: terraform
+        run: tofu init
+
+      - name: Run OpenTofu Tests
+        working-directory: terraform
+        run: tofu test
+
+  kics-scan:
+    name: KICS Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run KICS Scan
+        uses: checkmarx/kics-github-action@v2.1.14
+        with:
+          path: '.'
+          fail_on: high,critical
+          output_formats: 'json'
+          output_path: 'kics-results.json'
+          disable_progress_bar: true
+
+      - name: Upload KICS results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kics-results.json
+          path: kics-results.json
+
+  tofu-validate:
+    name: OpenTofu Validate
+    needs: [tflint, terraform-fmt, unit-test, kics-scan]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.1
+
+      - name: OpenTofu Init
+        working-directory: terraform
+        run: tofu init
+
+      - name: OpenTofu Validate
+        working-directory: terraform
+        run: tofu validate
+
+  tofu-plan:
+    name: OpenTofu Plan
+    needs: [tofu-validate]
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.1
+
+      - name: OpenTofu Init
+        working-directory: terraform
+        run: tofu init
+
+      - name: OpenTofu Plan
+        working-directory: terraform
+        env:
+          TF_VAR_SNOWFLAKE_DEPLOY_USER: ${{ vars.TF_VAR_SNOWFLAKE_DEPLOY_USER }}
+          TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64 }}
+          TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
+        run: tofu plan -detailed-exitcode -out=tfplan
+        
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+
+  tofu-apply:
+    name: OpenTofu Apply
+    needs: [tofu-plan]
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.1
+
+      - name: OpenTofu Init
+        working-directory: terraform
+        run: tofu init
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: terraform
+
+      - name: OpenTofu Apply
+        working-directory: terraform
+        env:
+          TF_VAR_SNOWFLAKE_DEPLOY_USER: ${{ vars.TF_VAR_SNOWFLAKE_DEPLOY_USER }}
+          TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64 }}
+          TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
+        run: tofu apply -auto-approve tfplan
