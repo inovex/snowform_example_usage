@@ -1,7 +1,7 @@
-variable "SNOWFLAKE_DEPLOY_USER" {
-  type        = string
-  description = "CI/CD variable TF_VAR_snowflake_deploy_user, name of the deployment user"
-}
+# variable "SNOWFLAKE_DEPLOY_USER" {
+#   type        = string
+#   description = "CI/CD variable TF_VAR_snowflake_deploy_user, name of the deployment user"
+# }
 
 variable "SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64" {
   type        = string
