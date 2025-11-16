@@ -18,8 +18,8 @@ module "access_roles" {
 }
 
 # SECURITYADMIN needs to be allowed to use COMMON schema for network policies
-# resource "snowflake_execute" "grant_create_network_rule_to_securityadmin" {
-#   provider = snowflake.sysadmin
-#   execute  = "GRANT CREATE NETWORK RULE ON SCHEMA ${snowflake_database.common_db.name}.${snowflake_schema.common_common_schema.name} TO ROLE SECURITYADMIN;"
-#   revert   = "REVOKE CREATE NETWORK RULE ON SCHEMA ${snowflake_database.common_db.name}.${snowflake_schema.common_common_schema.name} FROM ROLE SECURITYADMIN;"
-# }
+resource "snowflake_execute" "grant_create_network_rule_to_securityadmin" {
+  provider = snowflake.sysadmin
+  execute  = "GRANT CREATE NETWORK RULE ON SCHEMA ${snowflake_database.common_db.name}.${snowflake_schema.common_common_schema.name} TO ROLE SECURITYADMIN;"
+  revert   = "REVOKE CREATE NETWORK RULE ON SCHEMA ${snowflake_database.common_db.name}.${snowflake_schema.common_common_schema.name} FROM ROLE SECURITYADMIN;"
+}

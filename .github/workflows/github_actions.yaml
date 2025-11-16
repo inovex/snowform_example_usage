@@ -108,10 +108,10 @@ jobs:
       - name: Download Encrypted Artifact & Decrypt Artifact
         uses: badgerhobbs/terraform-state@v2
         with:
-          encryption_key: ${{ secrets.encryption_key }}
+          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
           operation: download
           location: artifact
-          github_token: ${{ secrets.gh_access_token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           directory: terraform
         continue-on-error: true
 
@@ -141,10 +141,10 @@ jobs:
       - name: Download Encrypted Artifact & Decrypt Artifact
         uses: badgerhobbs/terraform-state@v2
         with:
-          encryption_key: ${{ secrets.encryption_key }}
+          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
           operation: download
           location: artifact
-          github_token: ${{ secrets.gh_access_token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           directory: terraform
         continue-on-error: true
 
@@ -183,10 +183,10 @@ jobs:
       - name: Download Encrypted Artifact & Decrypt Artifact
         uses: badgerhobbs/terraform-state@v2
         with:
-          encryption_key: ${{ secrets.encryption_key }}
+          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
           operation: download
           location: artifact
-          github_token: ${{ secrets.gh_access_token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           directory: terraform
         continue-on-error: true
 
@@ -216,8 +216,8 @@ jobs:
       - name: Encrypt Artifact & Upload Encrypted Artifact
         uses: badgerhobbs/terraform-state@v2
         with:
-          encryption_key: ${{ secrets.encryption_key }}
+          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
           operation: upload
           location: artifact
-          github_token: ${{ secrets.gh_access_token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           directory: terraform
