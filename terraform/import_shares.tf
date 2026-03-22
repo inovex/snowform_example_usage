@@ -17,6 +17,6 @@ module "snowflake_shared_databases" {
   ]
 
   account_roles = [
-    "SYSADMIN",  # todo replace with real consumer or developer role
+    "SYSADMIN", # todo replace with real consumer or developer role
   ]
 }
