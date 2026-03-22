@@ -1,3 +1,9 @@
+import {
+  to       = snowflake_database.common_db
+  id       = "COMMON"
+  provider = snowflake.sysadmin
+}
+
 resource "snowflake_database" "common_db" {
   provider     = snowflake.sysadmin
   name         = "COMMON"
