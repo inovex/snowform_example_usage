@@ -32,3 +32,9 @@ To safely recover from an expired state:
 Or if there is nothing important in the test account, just delete all the resources and recreate them with terraform.
 
 *Otherwise, to prevent the state from being lost, ensure you run the pipeline to update the state at least once every 90 days.*
+
+## Logical Grouping of Imported Shares
+
+The following screenshot demonstrates an example of logically grouping the tables from imported shares for a consumer role `CONSUMER_ROLE`. The screenshot shows the perspective of the `CONSUMER_ROLE` in the Snowsight Horizon Catalog.
+
+![Logical Grouping of Imported Shares](img/screenshot_logical_grouping_of_imported_shares.png)
