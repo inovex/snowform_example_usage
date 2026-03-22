@@ -1,5 +1,5 @@
 module "snowflake_shared_databases" {
-  source = "github.com/inovex/snowform_import_listing.git?ref=0.0.1"
+  source = "github.com/inovex/snowform_import_listing?ref=0.0.1"
 
   providers = {
     snowflake.sysadmin = snowflake.sysadmin
