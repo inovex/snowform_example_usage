@@ -36,5 +36,5 @@ provider "snowflake" {
   alias                    = "securityadmin"
   authenticator            = "SNOWFLAKE_JWT"
   driver_tracing           = "debug"
-  preview_features_enabled = ["snowflake_procedure_sql_resource", "snowflake_network_rule_resource", "snowflake_network_policy_attachment_resource", "snowflake_authentication_policy_resource", "snowflake_user_authentication_policy_attachment_resource"]
+  preview_features_enabled = ["snowflake_procedure_sql_resource", "snowflake_network_policy_attachment_resource", "snowflake_authentication_policy_resource", "snowflake_user_authentication_policy_attachment_resource"]
 }
