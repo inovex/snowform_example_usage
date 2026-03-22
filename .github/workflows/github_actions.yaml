@@ -153,6 +153,10 @@ jobs:
         with:
           tofu_version: 1.9.1
 
+      - name: Configure Git credentials
+        run: |
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
       - name: OpenTofu Init
         working-directory: terraform
         run: tofu init
