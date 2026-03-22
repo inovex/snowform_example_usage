@@ -28,7 +28,7 @@ module "logical_import_layer" {
   # Grant read access to roles
   database_role_grants = {
     "IMPORTED_INOVEX" = [
-      "SYSADMIN",
+      snowflake_account_role.consumer.name
     ],
   }
 
@@ -39,5 +39,6 @@ module "logical_import_layer" {
 
   depends_on = [
     snowflake_warehouse.xs_wh,
+    snowflake_account_role.consumer,
   ]
 }
