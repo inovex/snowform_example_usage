@@ -39,8 +39,5 @@ module "logical_import_layer" {
 
   depends_on = [
     snowflake_warehouse.xs_wh,
-    snowflake_database.imported_inovex_db,
-    snowflake_schema.imported_inovex_customer_data_schema,
-    snowflake_schema.imported_inovex_location_data_schema,
   ]
 }
