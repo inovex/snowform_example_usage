@@ -1,3 +1,8 @@
+import {
+  to = snowflake_warehouse.xs_wh
+  id = "XS_WH"
+}
+
 resource "snowflake_warehouse" "xs_wh" {
   provider       = snowflake.sysadmin
   name           = "XS_WH"
