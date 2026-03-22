@@ -1,3 +1,11 @@
+resource "snowflake_warehouse" "xs_wh" {
+  provider       = snowflake.sysadmin
+  name           = "XS_WH"
+  warehouse_size = "XSMALL"
+  auto_suspend   = 60
+  auto_resume    = true
+}
+
 resource "snowflake_database" "common_db" {
   provider     = snowflake.sysadmin
   name         = "COMMON"

@@ -9,6 +9,7 @@ provider "snowflake" {
   alias                    = "sysadmin"
   authenticator            = "SNOWFLAKE_JWT"
   driver_tracing           = "debug"
+  warehouse                = "XS_WH"
   preview_features_enabled = ["snowflake_notification_integration_resource", "snowflake_procedure_sql_resource", "snowflake_procedure_python_resource"]
 }
 
