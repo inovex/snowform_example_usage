@@ -81,6 +81,66 @@ If the state is ever lost anyway (for example, the bucket was deleted), OpenTofu
    ```
    Keep the warehouse `XS_WH`, which is adopted with an `import {}` block, and the database `IMPORTED_INOVEX`, which Terraform does not create but the logical import layer needs.
 
+## Claude Code Debug Access (MCP)
+
+`terraform/claude_debug_access.tf` gives Claude Code read-only access to this account through the [Snowflake-managed MCP server](https://docs.snowflake.com/en/user-guide/snowflake-cortex/cortex-agents-mcp), for debugging the deployed resources.
+
+| Object | Purpose |
+|---|---|
+| `COMMON.COMMON.CLAUDE_DEBUG_MCP` | MCP server with a single `SYSTEM_EXECUTE_SQL` tool, `read_only: true` (SELECT only), on `XS_WH` |
+| `CLAUDE_DEBUG_ROLE` | Read-only role. It inherits `COMMON_COMMON_R` and `CONSUMER_ROLE`, has `USAGE` and `MONITOR` on `XS_WH` (query history of the warehouse) and `IMPORTED PRIVILEGES` on the imported share databases |
+| `CLAUDE_DEBUG_USER` | Service user with `CLAUDE_DEBUG_ROLE`. It can log in only with a programmatic access token (PAT) |
+| `COMMON.COMMON.CLAUDE_DEBUG_PAT_ONLY` | Authentication policy on that user: PAT only, at most 90 days, no network policy required |
+
+Endpoint: `https://eruvbjc-inovex-tf-modules.snowflakecomputing.com/api/v2/databases/COMMON/schemas/COMMON/mcp-servers/CLAUDE_DEBUG_MCP`. Use hyphens in the host name, not underscores.
+
+### One-time manual steps
+
+The pipeline can't do these steps: the grant needs ACCOUNTADMIN, and the PAT is a secret. Run them in Snowsight after the first deploy:
+
+```sql
+-- ACCOUNT_USAGE views (grants, query history, all objects). Only ACCOUNTADMIN can grant this.
+USE ROLE ACCOUNTADMIN;
+GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE CLAUDE_DEBUG_ROLE;
+
+-- Token for Claude Code. The secret is shown only once, so copy it right away.
+USE ROLE SECURITYADMIN;
+ALTER USER CLAUDE_DEBUG_USER ADD PROGRAMMATIC ACCESS TOKEN CLAUDE_CODE
+  ROLE_RESTRICTION = 'CLAUDE_DEBUG_ROLE'
+  DAYS_TO_EXPIRY = 90
+  COMMENT = 'Claude Code MCP access';
+```
+
+Store the token secret in the environment variable `SNOWFLAKE_CLAUDE_PAT`, for example in `~/.zshrc`. Claude Code reads it from the `.mcp.json` of the workspace:
+
+```json
+{
+  "mcpServers": {
+    "snowflake": {
+      "type": "http",
+      "url": "https://eruvbjc-inovex-tf-modules.snowflakecomputing.com/api/v2/databases/COMMON/schemas/COMMON/mcp-servers/CLAUDE_DEBUG_MCP",
+      "headers": { "Authorization": "Bearer ${SNOWFLAKE_CLAUDE_PAT}" }
+    }
+  }
+}
+```
+
+### Rotating or revoking the token
+
+The token expires after 90 days. To replace it, add a new one first, then remove the old one:
+```sql
+USE ROLE SECURITYADMIN;
+SHOW USER PROGRAMMATIC ACCESS TOKENS FOR USER CLAUDE_DEBUG_USER;
+ALTER USER CLAUDE_DEBUG_USER REMOVE PROGRAMMATIC ACCESS TOKEN CLAUDE_CODE;
+```
+To cut off access immediately, run `ALTER USER CLAUDE_DEBUG_USER SET DISABLED = TRUE`, or remove `claude_debug_access.tf`.
+
+### Limits
+
+- **SELECT only.** The read-only SQL tool rejects `SHOW` and `DESCRIBE`. Use the `SNOWFLAKE.ACCOUNT_USAGE` views instead (for example `GRANTS_TO_ROLES` and `QUERY_HISTORY`, which lag by up to about 2 hours), or `INFORMATION_SCHEMA` for live data.
+- **One role.** The PAT is restricted to `CLAUDE_DEBUG_ROLE`, and secondary roles are not used.
+- **What it can see.** It sees what `CLAUDE_DEBUG_ROLE` can see. Metadata of other objects is available through `ACCOUNT_USAGE`, but their data is not.
+
 ## Logical Grouping of Imported Shares
 
 The following screenshot demonstrates an example of logically grouping the tables from imported shares for a consumer role `CONSUMER_ROLE`. The screenshot shows the perspective of the `CONSUMER_ROLE` in the Snowsight Horizon Catalog.
