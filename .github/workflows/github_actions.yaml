@@ -132,7 +132,6 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-      actions: read # list artifacts for the one-time state migration
       id-token: write # Workload Identity Federation to GCP
     steps:
       - name: Checkout code
@@ -148,34 +147,10 @@ jobs:
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.9.1
-          tofu_wrapper: false # plain stdout for the migration check below
 
       - name: OpenTofu Init
         working-directory: terraform
         run: tofu init
-
-      # TODO: remove the next two steps (and the ENCRYPTION_KEY secret) once the state is in GCS.
-      # One-time migration of the old state from the encrypted GitHub Actions artifact.
-      - name: Download legacy state artifact
-        uses: badgerhobbs/terraform-state@v2
-        with:
-          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
-          operation: download
-          location: artifact
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          directory: terraform
-        continue-on-error: true
-
-      - name: Migrate legacy state to GCS
-        working-directory: terraform
-        run: |
-          if [ -f terraform.tfstate ] && [ -z "$(tofu state list 2>/dev/null || true)" ]; then
-            echo "GCS state is empty, pushing the legacy state from the artifact"
-            tofu state push terraform.tfstate
-          else
-            echo "Nothing to migrate"
-          fi
-          rm -f terraform.tfstate terraform.tfstate.encrypted
 
       - name: OpenTofu Plan
         working-directory: terraform
