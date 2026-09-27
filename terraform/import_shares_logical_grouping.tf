@@ -1,5 +1,5 @@
 module "logical_import_layer" {
-  source = "github.com/inovex/snowform_logical_import_layer.git?ref=0.0.4"
+  source = "github.com/inovex/snowform_logical_import_layer.git?ref=0.0.5"
 
 
   # Location for the stored procedure
