@@ -213,7 +213,9 @@ jobs:
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
         run: tofu apply -auto-approve tfplan
 
+      # Upload the state even if apply fails, so partially applied resources are not lost
       - name: Encrypt Artifact & Upload Encrypted Artifact
+        if: always()
         uses: badgerhobbs/terraform-state@v2
         with:
           encryption_key: ${{ secrets.ENCRYPTION_KEY }}
