@@ -40,5 +40,6 @@ module "logical_import_layer" {
   depends_on = [
     snowflake_warehouse.xs_wh,
     snowflake_account_role.consumer,
+    snowflake_schema.common_common_schema, # procedure_database/procedure_schema must exist first
   ]
 }
