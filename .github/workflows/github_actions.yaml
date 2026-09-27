@@ -5,7 +5,14 @@ env:
   SF_LOG: DEBUG
   SNOWFLAKE_RETRY_TIMEOUT: 120  # 2 minutes timeout
   SNOWFLAKE_RETRY_COUNT: 2
+  # Keyless access to the GCS state bucket, see scripts/setup_gcp_state_backend.sh
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/294471397577/locations/global/workloadIdentityPools/github/providers/snowform-example-usage
+  GCP_SERVICE_ACCOUNT: snowform-tfstate@quickstart-1592892564690.iam.gserviceaccount.com
 
+# Queue runs of the same branch so two runs never plan/apply against the state at the same time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   tflint:
@@ -67,7 +74,7 @@ jobs:
 
       - name: OpenTofu init
         working-directory: terraform
-        run: tofu init
+        run: tofu init -backend=false
 
       - name: Run OpenTofu Tests
         working-directory: terraform
@@ -100,20 +107,9 @@ jobs:
     name: OpenTofu Validate
     needs: [tflint, terraform-fmt, unit-test, kics-scan]
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Download Encrypted Artifact & Decrypt Artifact
-        uses: badgerhobbs/terraform-state@v2
-        with:
-          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
-          operation: download
-          location: artifact
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          directory: terraform
-        continue-on-error: true
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -122,7 +118,7 @@ jobs:
 
       - name: OpenTofu Init
         working-directory: terraform
-        run: tofu init
+        run: tofu init -backend=false
 
       - name: OpenTofu Validate
         working-directory: terraform
@@ -134,11 +130,33 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read # list artifacts for the one-time state migration
+      id-token: write # Workload Identity Federation to GCP
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Encrypted Artifact & Decrypt Artifact
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.1
+          tofu_wrapper: false # plain stdout for the migration check below
+
+      - name: OpenTofu Init
+        working-directory: terraform
+        run: tofu init
+
+      # TODO: remove the next two steps (and the ENCRYPTION_KEY secret) once the state is in GCS.
+      # One-time migration of the old state from the encrypted GitHub Actions artifact.
+      - name: Download legacy state artifact
         uses: badgerhobbs/terraform-state@v2
         with:
           encryption_key: ${{ secrets.ENCRYPTION_KEY }}
@@ -148,14 +166,16 @@ jobs:
           directory: terraform
         continue-on-error: true
 
-      - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
-        with:
-          tofu_version: 1.9.1
-
-      - name: OpenTofu Init
+      - name: Migrate legacy state to GCS
         working-directory: terraform
-        run: tofu init
+        run: |
+          if [ -f terraform.tfstate ] && [ -z "$(tofu state list 2>/dev/null || true)" ]; then
+            echo "GCS state is empty, pushing the legacy state from the artifact"
+            tofu state push terraform.tfstate
+          else
+            echo "Nothing to migrate"
+          fi
+          rm -f terraform.tfstate terraform.tfstate.encrypted
 
       - name: OpenTofu Plan
         working-directory: terraform
@@ -163,8 +183,8 @@ jobs:
           TF_VAR_SNOWFLAKE_DEPLOY_USER: ${{ vars.TF_VAR_SNOWFLAKE_DEPLOY_USER }}
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64 }}
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
-        run: tofu plan -detailed-exitcode -out=tfplan
-        
+        run: tofu plan -out=tfplan
+
       - name: Upload Plan
         uses: actions/upload-artifact@v4
         with:
@@ -174,21 +194,22 @@ jobs:
   tofu-apply:
     name: OpenTofu Apply
     needs: [tofu-plan]
+    # Only main deploys; other branches stop after the plan
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: staging
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation to GCP
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Encrypted Artifact & Decrypt Artifact
-        uses: badgerhobbs/terraform-state@v2
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
-          operation: download
-          location: artifact
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          directory: terraform
-        continue-on-error: true
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
@@ -205,6 +226,7 @@ jobs:
           name: tfplan
           path: terraform
 
+      # The state is written to GCS during apply, also when apply fails halfway
       - name: OpenTofu Apply
         working-directory: terraform
         env:
@@ -212,14 +234,3 @@ jobs:
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_BASE64 }}
           TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE: ${{ secrets.TF_VAR_SNOWFLAKE_DEPLOY_PRIVATE_KEY_PASSPHRASE }}
         run: tofu apply -auto-approve tfplan
-
-      # Upload the state even if apply fails, so partially applied resources are not lost
-      - name: Encrypt Artifact & Upload Encrypted Artifact
-        if: always()
-        uses: badgerhobbs/terraform-state@v2
-        with:
-          encryption_key: ${{ secrets.ENCRYPTION_KEY }}
-          operation: upload
-          location: artifact
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          directory: terraform
