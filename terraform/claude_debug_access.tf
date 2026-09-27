@@ -96,10 +96,22 @@ resource "snowflake_authentication_policy" "claude_debug_pat_only" {
   ]
 }
 
+# Reading the attachment back queries the policy references, which needs a warehouse
+resource "snowflake_grant_privileges_to_account_role" "securityadmin_warehouse_usage" {
+  provider          = snowflake.sysadmin
+  privileges        = ["USAGE"]
+  account_role_name = "SECURITYADMIN"
+  on_account_object {
+    object_type = "WAREHOUSE"
+    object_name = snowflake_warehouse.xs_wh.name
+  }
+}
+
 resource "snowflake_user_authentication_policy_attachment" "claude_debug_pat_only" {
   provider                   = snowflake.securityadmin
   authentication_policy_name = snowflake_authentication_policy.claude_debug_pat_only.fully_qualified_name
   user_name                  = snowflake_service_user.claude_debug.name
+  depends_on                 = [snowflake_grant_privileges_to_account_role.securityadmin_warehouse_usage]
 }
 
 # The provider has no MCP server resource yet, so plain SQL is used
