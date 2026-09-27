@@ -87,7 +87,7 @@ If the state is ever lost anyway (for example, the bucket was deleted), OpenTofu
 
 | Object | Purpose |
 |---|---|
-| `COMMON.COMMON.CLAUDE_DEBUG_MCP` | MCP server with a single `SYSTEM_EXECUTE_SQL` tool, `read_only: true` (SELECT only), on `XS_WH` |
+| `COMMON.COMMON.CLAUDE_DEBUG_MCP` | MCP server with a single `SYSTEM_EXECUTE_SQL` tool, `read_only: true`, on `XS_WH` |
 | `CLAUDE_DEBUG_ROLE` | Read-only role. It inherits `COMMON_COMMON_R` and `CONSUMER_ROLE`, has `USAGE` and `MONITOR` on `XS_WH` (query history of the warehouse) and `IMPORTED PRIVILEGES` on the imported share databases |
 | `CLAUDE_DEBUG_USER` | Service user with `CLAUDE_DEBUG_ROLE`. It can log in only with a programmatic access token (PAT) |
 | `COMMON.COMMON.CLAUDE_DEBUG_PAT_ONLY` | Authentication policy on that user: PAT only, at most 90 days, no network policy required |
@@ -137,7 +137,7 @@ To cut off access immediately, run `ALTER USER CLAUDE_DEBUG_USER SET DISABLED = 
 
 ### Limits
 
-- **SELECT only.** The read-only SQL tool rejects `SHOW` and `DESCRIBE`. Use the `SNOWFLAKE.ACCOUNT_USAGE` views instead (for example `GRANTS_TO_ROLES` and `QUERY_HISTORY`, which lag by up to about 2 hours), or `INFORMATION_SCHEMA` for live data.
+- **Read-only.** The SQL tool runs `SELECT` and `SHOW` (for example `SHOW GRANTS TO ROLE ...`) and rejects statements that change anything. For history, use the `SNOWFLAKE.ACCOUNT_USAGE` views (for example `QUERY_HISTORY`, which lags by up to about 2 hours).
 - **One role.** The PAT is restricted to `CLAUDE_DEBUG_ROLE`, and secondary roles are not used.
 - **What it can see.** It sees what `CLAUDE_DEBUG_ROLE` can see. Metadata of other objects is available through `ACCOUNT_USAGE`, but their data is not.
 
