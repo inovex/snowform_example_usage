@@ -53,7 +53,7 @@ The bucket, the service account and the Workload Identity Federation were create
 
 ### Migration from the old artifact state
 
-The first plan run after the switch migrates the state: it downloads the last encrypted state artifact and, if the GCS state is still empty, pushes it to the bucket with `tofu state push`. Once the state is in GCS, remove the two migration steps (marked with a `TODO` in the workflow) and the `ENCRYPTION_KEY` secret.
+On 2026-09-27 the state was migrated once from the last encrypted artifact to the bucket, with `tofu state push` in a temporary workflow step (PR #13). The migration steps and the `ENCRYPTION_KEY` secret were removed afterwards.
 
 ### Working with the state locally
 
