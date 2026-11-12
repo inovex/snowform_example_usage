@@ -39,3 +39,6 @@ terraform.rc
 # Private/public key pairs for Snowflake key-pair (JWT) authentication
 *.p8
 *.pu
+
+# macOS Finder metadata
+.DS_Store
