@@ -16,6 +16,7 @@ These shares are mapped to local databases and made available to the `SYSADMIN` 
 **Roles & Access Control:**
 - Access roles are dynamically generated for the `COMMON` database and schema using the `snowform_access_roles` module.
 - Specific privileges (e.g., `CREATE NETWORK RULE`) are explicitly granted to `SECURITYADMIN` on the `COMMON` schema.
+- Account-level network policy `ALLOW_ALL` (`terraform/network_policies.tf`) allows every IPv4 address. It is only a formal placeholder for the Trust Center check and does not restrict access yet.
 - The setup utilizes dedicated providers for `SYSADMIN`, `USERADMIN`, and `SECURITYADMIN` roles, authenticating via Key-Pair (JWT).
 
 ## Deployment Pipeline
